@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Перевод титров</title>
+</head>
+<body>
+  <h2>Загрузите файл (.srt)</h2>
+  <input type="file" id="fileInput">
+  <button onclick="uploadFile()">Загрузить</button>
+  
+  <h2>Дальнейшие действия</h2>
+  <button id="translateButton" style="display:none;" onclick="translateFile()">Перевести</button>
+  <button id="downloadButton" style="display:none;" onclick="downloadFile()">Скачать переведённый файл</button>
+  
+  <!-- Область для отображения прогресса перевода -->
+  <div id="progress" style="margin-top: 20px; border: 1px solid #ccc; padding: 10px;"></div>
+
+  <script>
+    let uploadedFilename = '';
+    let downloadUrl = '';
+
+    function uploadFile() {
+      const fileInputElem = document.getElementById("fileInput");
+      if (!fileInputElem.files.length) {
+        alert("Пожалуйста, выберите файл");
+        return;
+      }
+      const file = fileInputElem.files[0];
+      const formData = new FormData();
+      formData.append("file", file);
+      
+      fetch("http://127.0.0.1:8000/upload/", {
+        method: "POST",
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        alert(data.message);
+        if (data.filename) {
+          uploadedFilename = data.filename;
+          document.getElementById("translateButton").style.display = "inline";
+        } else {
+          alert("Ошибка загрузки файла.");
+        }
+      })
+      .catch(error => {
+        console.error("Ошибка при загрузке файла:", error);
+        alert("Ошибка при загрузке файла: " + error);
+      });
+    }
+
+    function translateFile() {
+      if (!uploadedFilename) {
+        alert("Нет файла для перевода");
+        return;
+      }
+      const progressDiv = document.getElementById("progress");
+      progressDiv.innerHTML = "Запущен перевод...<br>";
+      
+      // Используем Server-Sent Events для получения прогресса перевода
+      const eventSource = new EventSource(`http://127.0.0.1:8000/translate_stream/?filename=${encodeURIComponent(uploadedFilename)}`);
+      eventSource.onmessage = function(event) {
+        console.log("Progress: ", event.data);
+        progressDiv.innerHTML += event.data + "<br>";
+        // Если получен download_url, сохраняем его для последующего скачивания
+        if (event.data.startsWith("download_url: ")) {
+          downloadUrl = "http://127.0.0.1:8000" + event.data.replace("download_url: ", "").trim();
+          document.getElementById("downloadButton").style.display = "inline";
+        }
+      };
+      eventSource.onerror = function(event) {
+        console.error("EventSource error", event);
+        progressDiv.innerHTML += "Ошибка во время перевода.<br>";
+        eventSource.close();
+      };
+    }
+
+    function downloadFile() {
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = ''; // имя файла определяется сервером
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
+</body>
+</html>
