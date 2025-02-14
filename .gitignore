@@ -28,3 +28,6 @@ Subtutle/lib/python3.11/site-packages/torch/lib/libtorch_cpu.dylib
 .env
 *.srt
 *.sh
+
+# Игнорируем базу данных SQLite
+backend/chat.db
