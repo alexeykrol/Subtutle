@@ -27,3 +27,4 @@ Subtutle/lib/python3.11/site-packages/torch/lib/libtorch_cpu.dylib
 # Игнорируем файлы конфигурации и загрузки
 .env
 *.srt
+*.sh
