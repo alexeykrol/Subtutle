@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Chat Interface</title>
+  <style>
+    /* Простейший стиль для чат-интерфейса */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    #chat-container {
+      width: 100%;
+      max-width: 600px;
+      height: 400px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      overflow-y: auto;
+      margin-bottom: 10px;
+    }
+    .message {
+      margin: 8px 0;
+      padding: 6px;
+      border-radius: 4px;
+    }
+    .message.user {
+      text-align: right;
+      background-color: #e7f3ff;
+      color: #003366;
+    }
+    .message.bot {
+      text-align: left;
+      background-color: #e7ffe7;
+      color: #006600;
+    }
+    #chat-input {
+      width: 100%;
+      max-width: 600px;
+      padding: 10px;
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div id="chat-container"></div>
+  <input type="text" id="chat-input" placeholder="Введите ваш вопрос (до 1000 символов)" maxlength="1000" />
+
+  <script>
+    // При нажатии Enter отправляем сообщение
+    document.getElementById('chat-input').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        const inputField = document.getElementById('chat-input');
+        const message = inputField.value.trim();
+        if (message.length === 0) return;
+        appendMessage('user', message);
+        inputField.value = '';
+        sendMessage(message);
+      }
+    });
+
+    // Функция для добавления сообщения в окно чата
+    function appendMessage(sender, text) {
+      const container = document.getElementById('chat-container');
+      const msgDiv = document.createElement('div');
+      msgDiv.classList.add('message', sender);
+      msgDiv.textContent = text;
+      container.appendChild(msgDiv);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    // Отправка запроса на сервер через AJAX (Fetch API)
+    function sendMessage(text) {
+      fetch('chat-handler.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ message: text })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if(data.success) {
+          appendMessage('bot', data.response);
+        } else {
+          appendMessage('bot', 'Ошибка: ' + data.error);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        appendMessage('bot', 'Произошла ошибка при обращении к серверу.');
+      });
+    }
+  </script>
+</body>
+</html>

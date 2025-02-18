@@ -1,0 +1,50 @@
+<!-- Версия 1.0 для интеграции -->
+
+
+<div id="chat">
+    <div id="chat-box"></div>
+    <input type="text" id="chat-username" placeholder="Ваше имя">
+    <textarea id="chat-input" placeholder="Введите сообщение"></textarea>
+    <button id="chat-send">Отправить</button>
+</div>
+
+<!-- Закомментированные стили -->
+<!-- <link rel="stylesheet" href="frontend/style.css"> -->
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const chatBox = document.getElementById("chat-box");
+    const chatInput = document.getElementById("chat-input");
+    const chatSend = document.getElementById("chat-send");
+
+    function loadMessages() {
+        fetch("http://localhost:5000/chat")
+            .then(response => response.json())
+            .then(data => {
+                chatBox.innerHTML = "";
+                data.forEach(msg => {
+                    chatBox.innerHTML += `<p><strong>${msg.username}:</strong> ${msg.message}</p>`;
+                });
+            });
+    }
+
+    chatSend.addEventListener("click", function () {
+        const username = document.getElementById("chat-username").value || "Аноним";
+        const message = chatInput.value.trim();
+        
+        if (message === "") return;
+
+        fetch("http://localhost:5000/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, message })
+        }).then(() => {
+            chatInput.value = "";
+            loadMessages();
+        });
+    });
+
+    setInterval(loadMessages, 3000);
+    loadMessages();
+});
+</script>

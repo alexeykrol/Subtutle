@@ -1,0 +1,26 @@
+#chat {
+    max-width: 400px;
+    margin: auto;
+    font-family: Arial, sans-serif;
+}
+#chat-box {
+    height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    padding: 10px;
+    background: #f9f9f9;
+}
+input, textarea {
+    width: 100%;
+    margin: 5px 0;
+    padding: 5px;
+    border: 1px solid #ccc;
+}
+button {
+    width: 100%;
+    background: blue;
+    color: white;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+}
